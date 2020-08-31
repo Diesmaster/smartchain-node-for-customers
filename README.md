@@ -1,6 +1,8 @@
-# Place this file somewhere on filesystem.
-# Make sure it is executable.
-# Pass in -blocknotify=/path/to/this/script
+Place this file somewhere on filesystem.
+
+Make sure it is executable.
+
+Pass in -blocknotify=/path/to/this/script
 
 The node needs to be funded and wallet loaded.
 
