@@ -37,7 +37,7 @@ curl --user $RPC_USER:$RPC_PASSWORD --data-binary "{\"jsonrpc\": \"1.0\", \"id\"
 
 #############################
 # variables v1
-# IMPORTANT! can add, but do not change names until v2 is sanctioned by CI/CD team (MYLO)
+# IMPORTANT! can add, but do not change names until v2 is sanctioned by vic/CI/CD team (MYLO)
 #############################
 BLOCKHASH=${1}
 BATCHES_NO_REPEAT_IMPORT_URL=
@@ -59,6 +59,11 @@ JUICYCHAIN_API_BASE_URL=
 # out="${INSIGHT_API_GET_ADDRESS_UTXO/XX_CHECK_ADDRESS_XX/${ADDRESS_TO_CHECK}}"
 # echo $out
 #############################
+
+# house keeping
+#############################
+# get the block height this blocknotify is running,send to api/db/reporting TODO finalize these vars with vic (MYLO)
+#BLOCKHEIGHT=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"getblock\", \"params\": [\"${BLOCKHASH}\"] }" -H 'content-type: text/plain;' http://$komodo_node_ip:$rpcport/ | jq -r '.result.height')
 
 #############################
 # batch logic
