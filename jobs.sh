@@ -43,6 +43,7 @@ BLOCKHASH=${1}
 BATCHES_NO_REPEAT_IMPORT_URL=
 BATCHES_GET_UNADDRESSED_URL=
 BATCHES_UPDATE_BATCH_ADDRESS_URL=
+BATCHES_UPDATE_BATCH_PRE_TX_URL=
 CERTIFICATES_GET_UNADDRESSED_URL=
 CERTIFIACTES_UPDATE_CERTIFICATE_ADDRESS_URL=
 CERTIFICATES_NO_FUNDING_TX_URL=
@@ -77,6 +78,7 @@ BATCHES_WITH_NO_ADDRESS=$(curl -s -X GET ${BATCHES_GET_UNADDRESSED_URL})
 # signmessage, genkomodo.php
 # update batches-api with "import-address"
 # send "pre-process" tx to "import-address"
+batches-import-hook-pre-process
 
 # for loop with jq (for each batch with no address do this)
 # signmessage(batch_number)
@@ -116,3 +118,22 @@ CERTIFICATES_NO_FUNDING_TX=$(curl -s -X GET ${CERTIFICATES_GET_NO_FUNDING_TX_URL
 # update juicychain-api with address
 # certificates need funding, rpc sendtoaddress
 # update juicychain-api with funding tx (separate to address-gen update, possibly no funds to send)
+
+
+
+
+function batches-import-hook-pre-process {
+    # hook-before-processing , check / create address for the import data from integration pipeline
+    # signmessage, genkomodo.php
+    # update batches-api with "import-address"
+    # send "pre-process" tx to "import-address"
+    local WALLET=$1
+    local DATA=$2
+    local IMPORT_UUID=$3
+    local SIGNED_DATA=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"signmessage\", \"params\": [\"${WALLET}\", \"${DATA}\"] }" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq '.result')
+    local BATCH_ADDRESS=$(php genaddressonly.php $SIGNED_DATA)
+    curl -s X POST -H 'Content-Type: application/json' --data ${BATCH_ADDRESS} ${BATCHES_UPDATE_BATCH_ADDRESS_URL}/$IMPORT_UUID/
+    # curl sendtoaddress small amount
+    local BATCH_ADDRESS_PRE_TX="{\"foo\": \"MYLO\"}"
+    curl -s X POST -H 'Content-Type: application/json' --data ${BATCH_ADDRESS_PRE_TX} ${BATCHES_UPDATE_BATCH_PRE_TX_URL}/$IMPORT_UUID/
+}
