@@ -73,7 +73,7 @@ BATCHES_IMPORT_NEW_NO_ADDRESS=$(curl -s -X GET ${BATCHES_NO_REPEAT_IMPORT_URL})
 BATCHES_IMPORT_NO_POST_PROCESS_TX=$(curl -s -X GET ${BATCHES_NO_REPEAT_IMPORT_URL})
 BATCHES_WITH_NO_ADDRESS=$(curl -s -X GET ${BATCHES_GET_UNADDRESSED_URL})
 
-# hook-before-processing , create address for the import data from integration pipeline
+# hook-before-processing , check / create address for the import data from integration pipeline
 # signmessage, genkomodo.php
 # update batches-api with "import-address"
 # send "pre-process" tx to "import-address"
