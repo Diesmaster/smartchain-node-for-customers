@@ -143,7 +143,20 @@ echo ${DEV_IMPORT_API_INTEGRITY_NO_POST_TX}
 # signmessage, genkomodo.php
 # update batches-api with "import-address"
 # send "pre-process" tx to "import-address"
-batches-import-integrity-pre-process "${THIS_NODE_WALLET}" "RANDOM_DATA" ${TEST_BATCH_UUID}
+
+sample='[{"name":"foo"},{"name":"bar"}]'
+for row in $(echo "${DEV_IMPORT_API_BATCHES_NULL_INTEGRITY}" | jq -r '.[] | @base64'); do
+    _jq() {
+     echo ${row} | base64 --decode | jq -r ${1}
+    }
+
+   RAW_JSON=$(_jq '.raw_json')
+   BATCH_DB_ID=$(_jq '.id')
+   batches-import-integrity-pre-process "${THIS_NODE_WALLET}" "${RAW_JSON}" "${BATCH_DB_ID}"
+done
+
+# WORKS FOR SINGLE
+# batches-import-integrity-pre-process "${THIS_NODE_WALLET}" "RANDOM_DATA" ${TEST_BATCH_UUID}
 
 # for loop with jq (for each batch with no address do this)
 # signmessage(batch_number)
