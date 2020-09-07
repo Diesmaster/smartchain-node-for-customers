@@ -9,7 +9,7 @@ komodo_node_ip=127.0.0.1
 # we send this amount to an address for house-keeping
 # update by 0.0001 (manually, if can be done in CI/CD, nice-to-have not need-to-have) (MYLO)
 # house keeping address is list.json last entry during dev
-SCRIPT_VERSION=0.00010001
+SCRIPT_VERSION=0.00010002
 HOUSE_KEEPING_ADDRESS="RS7y4zjQtcNv7inZowb8M6bH3ytS1moj9A"
 
 # send a small amount (SCRIPT_VERSION) for HOUSE_KEEPING_ADDRESS from each organization, TODO modulo block number (MYLO)
@@ -94,7 +94,7 @@ DEV_JUICYCHAIN_API_COUNTRY_PATH=country/
 DEV_JUICYCHAIN_API_BLOCKCHAIN_ADDRESS_PATH=blockchain-address/
 
 # dev v1
-DEV_IMPORT_API_BASE_URL=http://localhost:8777/
+DEV_IMPORT_API_BASE_URL=http://172.29.0.3:8777/
 DEV_IMPORT_API_INTEGRITY_PATH=integrity/
 DEV_IMPORT_API_BATCH_PATH=batch/
 DEV_JUICYCHAIN_API_BASE_URL=http://localhost:8888/
