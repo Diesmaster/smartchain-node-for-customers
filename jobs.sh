@@ -120,9 +120,13 @@ DEV_JUICYCHAIN_API_BLOCKCHAIN_ADDRESS_PATH=blockchain-address/
 # batch logic - currently single batch import target
 #############################
 # receive json responses
-BATCHES_IMPORT_NEW_NO_ADDRESS=$(curl -s -X GET ${BATCHES_NO_REPEAT_IMPORT_URL})
-BATCHES_IMPORT_NO_POST_PROCESS_TX=$(curl -s -X GET ${BATCHES_NO_REPEAT_IMPORT_URL})
-BATCHES_WITH_NO_ADDRESS=$(curl -s -X GET ${BATCHES_GET_UNADDRESSED_URL})
+DEV_IMPORT_API_BATCHES_NULL_INTEGRITY=$(curl -s -X GET ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_BATCH_PATH})
+echo "batch/"
+echo ${DEV_IMPORT_API_BATCHES_NULL_INTEGRITY}
+
+DEV_IMPORT_API_INTEGRITY_NO_POST_TX=$(curl -s -X GET ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_INTEGRITY_PATH})
+echo "integrity/"
+echo ${DEV_IMPORT_API_INTEGRITY_NO_POST_TX}
 
 # integrity-before-processing , check / create address for the import data from integration pipeline
 # signmessage, genkomodo.php
