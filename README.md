@@ -14,7 +14,7 @@ For testing the address is hardcoded.
 == Install
 System requirements
 ```
-sudo apt install php php-gmp
+sudo apt install php php-gmp jq
 ```
 Git submodule bitcoin ECDSA
 ```
