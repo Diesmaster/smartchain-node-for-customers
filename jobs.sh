@@ -166,8 +166,8 @@ batches-import-integrity-pre-process "RUPmBDaf2N2S291dWx1gN9NLBLzsJtKY8y" "RANDO
 ############################
 # cert logic
 
-CERTIFICATES_NEW_NO_ADDRESS=$(curl -s -X GET ${CERTIFICATES_GET_UNADDRESSED_URL})
-CERTIFICATES_NO_FUNDING_TX=$(curl -s -X GET ${CERTIFICATES_GET_NO_FUNDING_TX_URL})
+# CERTIFICATES_NEW_NO_ADDRESS=$(curl -s -X GET ${CERTIFICATES_GET_UNADDRESSED_URL})
+# CERTIFICATES_NO_FUNDING_TX=$(curl -s -X GET ${CERTIFICATES_GET_NO_FUNDING_TX_URL})
 
 # for loop with jq (for each certificate with no address do this)
 # signmessage(cert_identifier)
