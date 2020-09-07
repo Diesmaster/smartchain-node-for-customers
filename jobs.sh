@@ -22,8 +22,8 @@ HOUSE_KEEPING_ADDRESS="RS7y4zjQtcNv7inZowb8M6bH3ytS1moj9A"
 # curl --user $rpcuser:$rpcpassword  --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"sendtoaddress\", \"params\": [\"RS7y4zjQtcNv7inZowb8M6bH3ytS1moj9A\", 0.001, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$rpcport/
 # update to send SCRIPT_VERSION, increment by 0.0001 for each update
 # TODO check with vic about variables passed in, or can source from config file (but config file requires generation from docker-compose runtime params)
-curl --user $rpcuser:$rpcpassword  --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"sendtoaddress\", \"params\": [\"${HOUSE_KEEPING_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$rpcport/
-curl --user $RPC_USER:$RPC_PASSWORD --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"sendtoaddress\", \"params\": [\"${HOUSE_KEEPING_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$RPC_PORT/
+curl -s --user $rpcuser:$rpcpassword  --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"sendtoaddress\", \"params\": [\"${HOUSE_KEEPING_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$rpcport/
+curl -s --user $RPC_USER:$RPC_PASSWORD --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"sendtoaddress\", \"params\": [\"${HOUSE_KEEPING_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$RPC_PORT/
 #############################
 
 
@@ -41,12 +41,15 @@ function batches-import-integrity-pre-process {
     local WALLET=$1 
     local DATA=$2
     local IMPORT_ID=$3
+    echo "Checking import id: ${IMPORT_ID}"
     local SIGNED_DATA=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"signmessage\", \"params\": [\"${WALLET}\", \"${DATA}\"] }" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq -r '.result')
     local INTEGRITY_ADDRESS=$(php genaddressonly.php $SIGNED_DATA | jq -r '.address')
+    echo "INTEGRITY_ADDRESS will be ${INTEGRITY_ADDRESS}"
     # IMPORTANT!  this next POST will fail if the INTEGRITY_ADDRESS is not unique. The same data already has been used to create an address in the integrity table
     local INTEGRITY_ID=$(curl -s -X POST -H "Content-Type: application/json" ${DEV_IMPORT_API_BASE_URL}${INTEGRITY_PATH} --data "{\"integrity_address\": \"${INTEGRITY_ADDRESS}\", \"batch\": \"${IMPORT_ID}\"}" | jq -r '.id')
+    echo "integrity db id: ${INTEGRITY_ID}"
     # curl sendtoaddress small amount
-    local INTEGRITY_PRE_TX=$(curl --user $rpcuser:$rpcpassword  --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"sendtoaddress\", \"params\": [\"${INTEGRITY_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$rpcport/)
+    local INTEGRITY_PRE_TX=$(curl -s --user $rpcuser:$rpcpassword  --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"sendtoaddress\", \"params\": [\"${INTEGRITY_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$rpcport/)
     curl -s X PUT -H 'Content-Type: application/json' ${DEV_IMPORT_API_BASE_URL}${INTEGRITY_PATH}${INTEGRITY_ID} --data "{\"integrity_address\": \"${INTEGRITY_ADDRESS}\", \"integrity_pre_tx\": \"${INTEGRITY_PRE_TX}\" }"
 }
 
