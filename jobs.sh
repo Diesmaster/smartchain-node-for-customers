@@ -57,6 +57,7 @@ function batches-import-integrity-pre-process {
     echo "integrity db id: ${INTEGRITY_ID}"
     # curl sendtoaddress small amount
     local INTEGRITY_PRE_TX=$(curl -s --user $rpcuser:$rpcpassword  --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"sendpretx\", \"method\": \"sendtoaddress\", \"params\": [\"${INTEGRITY_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$rpcport/)
+    echo "integrity pre tx: ${INTEGRITY_PRE_TX}"
     curl -s X PUT -H 'Content-Type: application/json' ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_INTEGRITY_PATH}${INTEGRITY_ID} --data "{\"integrity_address\": \"${INTEGRITY_ADDRESS}\", \"integrity_pre_tx\": \"${INTEGRITY_PRE_TX}\" }"
 }
 
