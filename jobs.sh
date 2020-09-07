@@ -5,6 +5,9 @@ rpcuser=changeme
 rpcpassword=alsochangeme
 rpcport=24708
 komodo_node_ip=127.0.0.1
+BLOCKNOTIFY_DIR=/opt/komodo/customer-smartchain-nodes-blocknotify/
+
+# TEST_DATA=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9+/=' | fold -w 100 | head -n 1)
 
 # we send this amount to an address for house-keeping
 # update by 0.0001 (manually, if can be done in CI/CD, nice-to-have not need-to-have) (MYLO)
@@ -42,9 +45,10 @@ function batches-import-integrity-pre-process {
     local DATA=$2
     local IMPORT_ID=$3
     echo "Checking import id: ${IMPORT_ID}"
+    # no wrap base64 from https://superuser.com/a/1225139
     local SIGNED_DATA=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"signrawjson\", \"method\": \"signmessage\", \"params\": [\"${WALLET}\", \"${DATA}\"] }" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq -r '.result' | base64 -w 0 | sed 's/\=//')
     echo "signed data: ${SIGNED_DATA}"
-    local INTEGRITY_ADDRESS=$(php genaddressonly.php $SIGNED_DATA | jq -r '.address')
+    local INTEGRITY_ADDRESS=$(php ${BLOCKNOTIFY_DIR}genaddressonly.php $SIGNED_DATA | jq -r '.address')
     echo "INTEGRITY_ADDRESS will be ${INTEGRITY_ADDRESS}"
     # IMPORTANT!  this next POST will fail if the INTEGRITY_ADDRESS is not unique. The same data already has been used to create an address in the integrity table
     local INTEGRITY_ID=$(curl -s -X POST -H "Content-Type: application/json" ${DEV_IMPORT_API_BASE_URL}${INTEGRITY_PATH} --data "{\"integrity_address\": \"${INTEGRITY_ADDRESS}\", \"batch\": \"${IMPORT_ID}\"}" | jq -r '.id')
