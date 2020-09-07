@@ -47,7 +47,6 @@ function batches-import-integrity-pre-process {
     local WALLET=$1 
     local DATA=$2
     echo $DATA
-    sleep 5
     local IMPORT_ID=$3
     echo "Checking import id: ${IMPORT_ID}"
     # no wrap base64 from https://superuser.com/a/1225139
