@@ -52,7 +52,25 @@ EXPLORER_2_BASE_URL=
 INSIGHT_API_GET_ADDRESS_UTXO="insight-api-komodo/addrs/XX_CHECK_ADDRESS_XX/utxo"
 INSIGHT_API_BROADCAST_TX="insight-api-komodo/tx/send"
 IMPORT_API_BASE_URL=
+IMPORT_API_INTEGRITY_PATH=integrity/
+IMPORT_API_BATH_PATH=batch/
 JUICYCHAIN_API_BASE_URL=
+DEV_JUICYCHAIN_API_BATCH_PATH=batch/
+DEV_JUICYCHAIN_API_CERTIFICATE_PATH=certificate/
+DEV_JUICYCHAIN_API_LOCATION_PATH=location/
+DEV_JUICYCHAIN_API_COUNTRY_PATH=country/
+DEV_JUICYCHAIN_API_BLOCKCHAIN_ADDRESS_PATH=blockchain-address/
+
+# dev v1
+DEV_IMPORT_API_BASE_URL=http://localhost:8777/
+DEV_IMPORT_API_INTEGRITY_PATH=integrity/
+DEV_IMPORT_API_BATCH_PATH=batch/
+DEV_JUICYCHAIN_API_BASE_URL=http://localhost:8888/
+DEV_JUICYCHAIN_API_BATCH_PATH=batch/
+DEV_JUICYCHAIN_API_CERTIFICATE_PATH=certificate/
+DEV_JUICYCHAIN_API_LOCATION_PATH=location/
+DEV_JUICYCHAIN_API_COUNTRY_PATH=country/
+DEV_JUICYCHAIN_API_BLOCKCHAIN_ADDRESS_PATH=blockchain-address/
 
 ##############################
 # note, var substitution for XX_CHECK_ADDRESS_XX 
@@ -67,18 +85,18 @@ JUICYCHAIN_API_BASE_URL=
 #BLOCKHEIGHT=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"getblock\", \"params\": [\"${BLOCKHASH}\"] }" -H 'content-type: text/plain;' http://$komodo_node_ip:$rpcport/ | jq -r '.result.height')
 
 #############################
-# batch logic
+# batch logic - currently single batch import target
 #############################
 # receive json responses
 BATCHES_IMPORT_NEW_NO_ADDRESS=$(curl -s -X GET ${BATCHES_NO_REPEAT_IMPORT_URL})
 BATCHES_IMPORT_NO_POST_PROCESS_TX=$(curl -s -X GET ${BATCHES_NO_REPEAT_IMPORT_URL})
 BATCHES_WITH_NO_ADDRESS=$(curl -s -X GET ${BATCHES_GET_UNADDRESSED_URL})
 
-# hook-before-processing , check / create address for the import data from integration pipeline
+# integrity-before-processing , check / create address for the import data from integration pipeline
 # signmessage, genkomodo.php
 # update batches-api with "import-address"
 # send "pre-process" tx to "import-address"
-batches-import-hook-pre-process
+batches-import-integrity-pre-process
 
 # for loop with jq (for each batch with no address do this)
 # signmessage(batch_number)
@@ -98,7 +116,7 @@ batches-import-hook-pre-process
 # use wif in signmessage.py with the utxo
 # broadcast via explorer INSIGHT_API_BROADCAST_TX
 
-# hook-after-processing
+# integrity-after-processing
 # send "post-process" tx to "import-address"
 # "import-address" with pre & post process tx
 
@@ -122,18 +140,25 @@ CERTIFICATES_NO_FUNDING_TX=$(curl -s -X GET ${CERTIFICATES_GET_NO_FUNDING_TX_URL
 
 
 
-function batches-import-hook-pre-process {
-    # hook-before-processing , check / create address for the import data from integration pipeline
+###########################
+# organization wallet = $1
+# raw_json import data = $2
+# batch database id = $3
+###########################
+function batches-import-integrity-pre-process {
+    # integrity-before-processing , create blockchain-address for the import data from integration pipeline
+    # blockchain-address has a database constraint for uniqueness.  will fail if exists
     # signmessage, genkomodo.php
     # update batches-api with "import-address"
     # send "pre-process" tx to "import-address"
-    local WALLET=$1
+    local WALLET=$1 
     local DATA=$2
-    local IMPORT_UUID=$3
-    local SIGNED_DATA=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"signmessage\", \"params\": [\"${WALLET}\", \"${DATA}\"] }" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq '.result')
-    local BATCH_ADDRESS=$(php genaddressonly.php $SIGNED_DATA)
-    curl -s X POST -H 'Content-Type: application/json' --data ${BATCH_ADDRESS} ${BATCHES_UPDATE_BATCH_ADDRESS_URL}/$IMPORT_UUID/
+    local IMPORT_ID=$3
+    local SIGNED_DATA=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"signmessage\", \"params\": [\"${WALLET}\", \"${DATA}\"] }" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq -r '.result')
+    local INTEGRITY_ADDRESS=$(php genaddressonly.php $SIGNED_DATA | jq -r '.address')
+    # IMPORTANT!  this next POST will fail if the INTEGRITY_ADDRESS is not unique. The same data already has been used to create an address in the integrity table
+    local INTEGRITY_ID=$(curl -s -X POST -H "Content-Type: application/json" ${DEV_IMPORT_API_BASE_URL}${INTEGRITY_PATH} --data "{\"integrity_address\": \"${INTEGRITY_ADDRESS}\", \"batch\": \"${IMPORT_ID}\"}" | jq -r '.id')
     # curl sendtoaddress small amount
-    local BATCH_ADDRESS_PRE_TX="{\"foo\": \"MYLO\"}"
-    curl -s X POST -H 'Content-Type: application/json' --data ${BATCH_ADDRESS_PRE_TX} ${BATCHES_UPDATE_BATCH_PRE_TX_URL}/$IMPORT_UUID/
+    local INTEGRITY_PRE_TX=$(curl --user $rpcuser:$rpcpassword  --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"sendtoaddress\", \"params\": [\"${INTEGRITY_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$rpcport/)
+    curl -s X PUT -H 'Content-Type: application/json' ${DEV_IMPORT_API_BASE_URL}${INTEGRITY_PATH}${INTEGRITY_ID} --data "{\"integrity_address\": \"${INTEGRITY_ADDRESS}\", \"integrity_pre_tx\": \"${INTEGRITY_PRE_TX}\" }"
 }
