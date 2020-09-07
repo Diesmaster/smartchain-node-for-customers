@@ -5,7 +5,8 @@ rpcuser=changeme
 rpcpassword=alsochangeme
 rpcport=24708
 komodo_node_ip=127.0.0.1
-BLOCKNOTIFY_DIR=/opt/komodo/customer-smartchain-nodes-blocknotify/
+#BLOCKNOTIFY_DIR=/opt/komodo/customer-smartchain-nodes-blocknotify/
+BLOCKNOTIFY_DIR=/home/mylo/dev/the-new-fork/all-komodo-nodes-blocknotify/
 THIS_NODE_WALLET=RUPmBDaf2N2S291dWx1gN9NLBLzsJtKY8y
 TEST_BATCH_UUID=""
 
@@ -45,10 +46,12 @@ function batches-import-integrity-pre-process {
     # send "pre-process" tx to "import-address"
     local WALLET=$1 
     local DATA=$2
+    echo $DATA
+    sleep 5
     local IMPORT_ID=$3
     echo "Checking import id: ${IMPORT_ID}"
     # no wrap base64 from https://superuser.com/a/1225139
-    local SIGNED_DATA=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"signrawjson\", \"method\": \"signmessage\", \"params\": [\"${WALLET}\", \"${DATA}\"] }" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq -r '.result' | base64 -w 0 | sed 's/\=//')
+    local SIGNED_DATA=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"signrawjson\", \"method\": \"signmessage\", \"params\": [\"${WALLET}\", \"${DATA}\"] }" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq -r '.result' | base64 -w 0) # | sed 's/\=//')
     echo "signed data: ${SIGNED_DATA}"
     local INTEGRITY_ADDRESS=$(php ${BLOCKNOTIFY_DIR}genaddressonly.php $SIGNED_DATA | jq -r '.address')
     echo "INTEGRITY_ADDRESS will be ${INTEGRITY_ADDRESS}"
@@ -144,15 +147,15 @@ echo ${DEV_IMPORT_API_INTEGRITY_NO_POST_TX}
 # update batches-api with "import-address"
 # send "pre-process" tx to "import-address"
 
-sample='[{"name":"foo"},{"name":"bar"}]'
 for row in $(echo "${DEV_IMPORT_API_BATCHES_NULL_INTEGRITY}" | jq -r '.[] | @base64'); do
     _jq() {
      echo ${row} | base64 --decode | jq -r ${1}
     }
 
    RAW_JSON=$(_jq '.raw_json')
+   # echo $RAW_JSON | base64 --decode
    BATCH_DB_ID=$(_jq '.id')
-   batches-import-integrity-pre-process "${THIS_NODE_WALLET}" "${RAW_JSON}" "${BATCH_DB_ID}"
+   batches-import-integrity-pre-process ${THIS_NODE_WALLET} ${RAW_JSON} ${BATCH_DB_ID}
 done
 
 # WORKS FOR SINGLE
