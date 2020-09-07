@@ -78,7 +78,8 @@ class BitcoinECDSADecker extends BitcoinECDSA {
 
 $bitcoinECDSA = new BitcoinECDSADecker();
 
-$passphrase = "myCamelCaseSeed";
+$passphrase = $argv[1];
+#$passphrase = "myCamelCaseSeed";
 
 /* available coins, you can add your own with params from src/chainparams.cpp */
 
