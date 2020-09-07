@@ -42,7 +42,7 @@ function batches-import-integrity-pre-process {
     local DATA=$2
     local IMPORT_ID=$3
     echo "Checking import id: ${IMPORT_ID}"
-    local SIGNED_DATA=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"signrawjson\", \"method\": \"signmessage\", \"params\": [\"${WALLET}\", \"${DATA}\"] }" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq -r '.result' | base64 -w 0)
+    local SIGNED_DATA=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"signrawjson\", \"method\": \"signmessage\", \"params\": [\"${WALLET}\", \"${DATA}\"] }" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq -r '.result' | base64 -w 0 | sed 's/\=//')
     echo "signed data: ${SIGNED_DATA}"
     local INTEGRITY_ADDRESS=$(php genaddressonly.php $SIGNED_DATA | jq -r '.address')
     echo "INTEGRITY_ADDRESS will be ${INTEGRITY_ADDRESS}"
