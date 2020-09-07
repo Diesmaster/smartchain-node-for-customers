@@ -6,6 +6,8 @@ rpcpassword=alsochangeme
 rpcport=24708
 komodo_node_ip=127.0.0.1
 BLOCKNOTIFY_DIR=/opt/komodo/customer-smartchain-nodes-blocknotify/
+THIS_NODE_WALLET=RUPmBDaf2N2S291dWx1gN9NLBLzsJtKY8y
+TEST_BATCH_UUID=""
 
 # TEST_DATA=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9+/=' | fold -w 100 | head -n 1)
 
@@ -140,7 +142,7 @@ echo ${DEV_IMPORT_API_INTEGRITY_NO_POST_TX}
 # signmessage, genkomodo.php
 # update batches-api with "import-address"
 # send "pre-process" tx to "import-address"
-batches-import-integrity-pre-process "RUPmBDaf2N2S291dWx1gN9NLBLzsJtKY8y" "RANDOM_DATA" "d96474ed-6532-4db4-81ba-15aeb5bdf39b"
+batches-import-integrity-pre-process "${THIS_NODE_WALLET}" "RANDOM_DATA" ${TEST_BATCH_UUID}
 
 # for loop with jq (for each batch with no address do this)
 # signmessage(batch_number)
