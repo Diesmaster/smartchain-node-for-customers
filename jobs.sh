@@ -5,8 +5,8 @@ rpcuser=changeme
 rpcpassword=alsochangeme
 rpcport=24708
 komodo_node_ip=127.0.0.1
-#BLOCKNOTIFY_DIR=/opt/komodo/customer-smartchain-nodes-blocknotify/
-BLOCKNOTIFY_DIR=/home/mylo/dev/the-new-fork/all-komodo-nodes-blocknotify/
+BLOCKNOTIFY_DIR=/opt/komodo/customer-smartchain-nodes-blocknotify/
+#BLOCKNOTIFY_DIR=/home/mylo/dev/the-new-fork/all-komodo-nodes-blocknotify/
 THIS_NODE_WALLET=RUPmBDaf2N2S291dWx1gN9NLBLzsJtKY8y
 TEST_BATCH_UUID=""
 
