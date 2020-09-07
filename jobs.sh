@@ -43,6 +43,7 @@ function batches-import-integrity-pre-process {
     local IMPORT_ID=$3
     echo "Checking import id: ${IMPORT_ID}"
     local SIGNED_DATA=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"signrawjson\", \"method\": \"signmessage\", \"params\": [\"${WALLET}\", \"${DATA}\"] }" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq -r '.result')
+    echo "signed data: ${SIGNED_DATA}"
     local INTEGRITY_ADDRESS=$(php genaddressonly.php $SIGNED_DATA | jq -r '.address')
     echo "INTEGRITY_ADDRESS will be ${INTEGRITY_ADDRESS}"
     # IMPORTANT!  this next POST will fail if the INTEGRITY_ADDRESS is not unique. The same data already has been used to create an address in the integrity table
