@@ -135,7 +135,7 @@ echo ${DEV_IMPORT_API_INTEGRITY_NO_POST_TX}
 # signmessage, genkomodo.php
 # update batches-api with "import-address"
 # send "pre-process" tx to "import-address"
-batches-import-integrity-pre-process
+batches-import-integrity-pre-process "RUPmBDaf2N2S291dWx1gN9NLBLzsJtKY8y" "RANDOM_DATA" "d96474ed-6532-4db4-81ba-15aeb5bdf39b"
 
 # for loop with jq (for each batch with no address do this)
 # signmessage(batch_number)
