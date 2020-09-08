@@ -18,6 +18,18 @@ TEST_BATCH_UUID=""
 SCRIPT_VERSION=0.00010002
 HOUSE_KEEPING_ADDRESS="RS7y4zjQtcNv7inZowb8M6bH3ytS1moj9A"
 
+
+CHAIN_SYNC=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\": \"curltest\", \"method\": \"getinfo\", \"params\": []}" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq -r '.result.longestchain - .result.blocks as $diff | $diff')
+
+if [ $CHAIN_SYNC -lt 5 ] ; then
+	echo "Chain close to sync"
+	continue 
+else
+	echo "Chain out of sync"
+	# TODO send alarm
+	exit
+fi
+
 # send a small amount (SCRIPT_VERSION) for HOUSE_KEEPING_ADDRESS from each organization, TODO modulo block number (MYLO)
 #############################
 # one explorer url to check is
