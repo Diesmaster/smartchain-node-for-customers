@@ -127,6 +127,7 @@ DEV_JUICYCHAIN_API_CERTIFICATE_PATH=certificate/
 DEV_JUICYCHAIN_API_LOCATION_PATH=location/
 DEV_JUICYCHAIN_API_COUNTRY_PATH=country/
 DEV_JUICYCHAIN_API_BLOCKCHAIN_ADDRESS_PATH=blockchain-address/
+DEV_IMPORT_API_BATCH_REQUIRE_INTEGRITY_PATH=batch/require_integrity/
 
 ##############################
 # note, var substitution for XX_CHECK_ADDRESS_XX 
@@ -144,13 +145,13 @@ DEV_JUICYCHAIN_API_BLOCKCHAIN_ADDRESS_PATH=blockchain-address/
 # batch logic - currently single batch import target
 #############################
 # receive json responses
-DEV_IMPORT_API_BATCHES_NULL_INTEGRITY=$(curl -s -X GET ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_BATCH_PATH})
-echo "batch/"
+DEV_IMPORT_API_BATCHES_NULL_INTEGRITY=$(curl -s -X GET ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_BATCH_REQUIRE_INTEGRITY_PATH})
+echo "batch/require_integrity/"
 echo ${DEV_IMPORT_API_BATCHES_NULL_INTEGRITY}
 
-DEV_IMPORT_API_INTEGRITY_NO_POST_TX=$(curl -s -X GET ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_INTEGRITY_PATH})
-echo "integrity/"
-echo ${DEV_IMPORT_API_INTEGRITY_NO_POST_TX}
+# DEV_IMPORT_API_INTEGRITY_NO_POST_TX=$(curl -s -X GET ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_INTEGRITY_PATH})
+echo "TODO integrity/missing_post_tx/"
+# echo ${DEV_IMPORT_API_INTEGRITY_NO_POST_TX}
 
 # integrity-before-processing , check / create address for the import data from integration pipeline
 # signmessage, genkomodo.php
