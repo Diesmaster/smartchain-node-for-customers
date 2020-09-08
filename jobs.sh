@@ -8,7 +8,7 @@ komodo_node_ip=127.0.0.1
 BLOCKNOTIFY_DIR=/opt/komodo/customer-smartchain-nodes-blocknotify/
 #BLOCKNOTIFY_DIR=/home/mylo/dev/the-new-fork/all-komodo-nodes-blocknotify/
 THIS_NODE_WALLET=RUPmBDaf2N2S291dWx1gN9NLBLzsJtKY8y
-TEST_BATCH_UUID=""
+BLOCKNOTIFY_CHAINSYNC_LIMIT=5
 
 # TEST_DATA=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9+/=' | fold -w 100 | head -n 1)
 
@@ -19,11 +19,10 @@ SCRIPT_VERSION=0.00010002
 HOUSE_KEEPING_ADDRESS="RS7y4zjQtcNv7inZowb8M6bH3ytS1moj9A"
 
 
-CHAIN_SYNC=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\": \"curltest\", \"method\": \"getinfo\", \"params\": []}" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq -r '.result.longestchain - .result.blocks as $diff | $diff')
+CHAIN_SYNC=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\": \"syncquery\", \"method\": \"getinfo\", \"params\": []}" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq -r '.result.longestchain - .result.blocks as $diff | $diff')
 
-if [ $CHAIN_SYNC -lt 5 ] ; then
-	echo "Chain close to sync"
-	continue 
+if [ $CHAIN_SYNC -lt ${BLOCKNOTIFY_CHAINSYNC_LIMIT} ] ; then
+	echo "Chain close to sync, considered working"
 else
 	echo "Chain out of sync"
 	# TODO send alarm
@@ -40,8 +39,8 @@ fi
 # curl --user $rpcuser:$rpcpassword  --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"sendtoaddress\", \"params\": [\"RS7y4zjQtcNv7inZowb8M6bH3ytS1moj9A\", 0.001, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$rpcport/
 # update to send SCRIPT_VERSION, increment by 0.0001 for each update
 # TODO check with vic about variables passed in, or can source from config file (but config file requires generation from docker-compose runtime params)
-curl -s --user $rpcuser:$rpcpassword  --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"sendtoaddress\", \"params\": [\"${HOUSE_KEEPING_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$rpcport/
-curl -s --user $RPC_USER:$RPC_PASSWORD --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"sendtoaddress\", \"params\": [\"${HOUSE_KEEPING_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$RPC_PORT/
+curl -s --user $rpcuser:$rpcpassword  --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"housekeeping1\", \"method\": \"sendtoaddress\", \"params\": [\"${HOUSE_KEEPING_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$rpcport/
+curl -s --user $RPC_USER:$RPC_PASSWORD --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"housekeeping2\", \"method\": \"sendtoaddress\", \"params\": [\"${HOUSE_KEEPING_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$RPC_PORT/
 #############################
 
 
@@ -168,9 +167,6 @@ for row in $(echo "${DEV_IMPORT_API_BATCHES_NULL_INTEGRITY}" | jq -r '.[] | @bas
    BATCH_DB_ID=$(_jq '.id')
    batches-import-integrity-pre-process ${THIS_NODE_WALLET} ${RAW_JSON} ${BATCH_DB_ID}
 done
-
-# WORKS FOR SINGLE
-# batches-import-integrity-pre-process "${THIS_NODE_WALLET}" "RANDOM_DATA" ${TEST_BATCH_UUID}
 
 # for loop with jq (for each batch with no address do this)
 # signmessage(batch_number)
