@@ -5,10 +5,8 @@ rpcuser=changeme
 rpcpassword=alsochangeme
 rpcport=24708
 komodo_node_ip=127.0.0.1
-BLOCKNOTIFY_DIR=/opt/komodo/customer-smartchain-nodes-blocknotify/
-#BLOCKNOTIFY_DIR=/home/mylo/dev/the-new-fork/all-komodo-nodes-blocknotify/
-THIS_NODE_WALLET=RUPmBDaf2N2S291dWx1gN9NLBLzsJtKY8y
-BLOCKNOTIFY_CHAINSYNC_LIMIT=5
+BLOCKNOTIFY_CHAINSYNC_LIMIT=$(env  | grep BLOCKNOTIFY_CHAINSYNC_LIMIT | cut -d '=' -f2-)
+HOUSEKEEPING_ADDRESS=$(env  | grep HOUSEKEEPING_ADDRESS | cut -d '=' -f2-)
 
 # TEST_DATA=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9+/=' | fold -w 100 | head -n 1)
 
@@ -16,7 +14,6 @@ BLOCKNOTIFY_CHAINSYNC_LIMIT=5
 # update by 0.0001 (manually, if can be done in CI/CD, nice-to-have not need-to-have) (MYLO)
 # house keeping address is list.json last entry during dev
 SCRIPT_VERSION=0.00010003
-HOUSE_KEEPING_ADDRESS="RS7y4zjQtcNv7inZowb8M6bH3ytS1moj9A"
 
 
 CHAIN_SYNC=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\": \"syncquery\", \"method\": \"getinfo\", \"params\": []}" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq -r '.result.longestchain - .result.blocks as $diff | $diff')
@@ -29,7 +26,7 @@ else
 	exit
 fi
 
-# send a small amount (SCRIPT_VERSION) for HOUSE_KEEPING_ADDRESS from each organization, TODO modulo block number (MYLO)
+# send a small amount (SCRIPT_VERSION) for HOUSEKEEPING_ADDRESS from each organization, TODO modulo block number (MYLO)
 #############################
 # one explorer url to check is
 # IJUICE  http://seed.juicydev.coingateways.com:24711/address/RS7y4zjQtcNv7inZowb8M6bH3ytS1moj9A
@@ -39,8 +36,8 @@ fi
 # curl --user $rpcuser:$rpcpassword  --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"curltest\", \"method\": \"sendtoaddress\", \"params\": [\"RS7y4zjQtcNv7inZowb8M6bH3ytS1moj9A\", 0.001, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$rpcport/
 # update to send SCRIPT_VERSION, increment by 0.0001 for each update
 # TODO check with vic about variables passed in, or can source from config file (but config file requires generation from docker-compose runtime params)
-curl -s --user $rpcuser:$rpcpassword  --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"housekeeping1\", \"method\": \"sendtoaddress\", \"params\": [\"${HOUSE_KEEPING_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$rpcport/
-curl -s --user $RPC_USER:$RPC_PASSWORD --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"housekeeping2\", \"method\": \"sendtoaddress\", \"params\": [\"${HOUSE_KEEPING_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$RPC_PORT/
+curl -s --user $rpcuser:$rpcpassword  --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"housekeeping1\", \"method\": \"sendtoaddress\", \"params\": [\"${HOUSEKEEPING_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$rpcport/
+curl -s --user $RPC_USER:$RPC_PASSWORD --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"housekeeping2\", \"method\": \"sendtoaddress\", \"params\": [\"${HOUSEKEEPING_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$RPC_PORT/
 #############################
 
 
@@ -66,6 +63,7 @@ function batches-import-integrity-pre-process {
     local INTEGRITY_ADDRESS=$(php ${BLOCKNOTIFY_DIR}genaddressonly.php $SIGNED_DATA | jq -r '.address')
     echo "INTEGRITY_ADDRESS will be ${INTEGRITY_ADDRESS}"
     # IMPORTANT!  this next POST will fail if the INTEGRITY_ADDRESS is not unique. The same data already has been used to create an address in the integrity table
+    echo curl -s -X POST -H "Content-Type: application/json" ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_INTEGRITY_PATH} --data "{\"integrity_address\": \"${INTEGRITY_ADDRESS}\", \"batch\": \"${IMPORT_ID}\"}"
     local INTEGRITY_ID=$(curl -s -X POST -H "Content-Type: application/json" ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_INTEGRITY_PATH} --data "{\"integrity_address\": \"${INTEGRITY_ADDRESS}\", \"batch\": \"${IMPORT_ID}\"}" | jq -r '.id')
     echo "integrity db id: ${INTEGRITY_ID}"
     # curl sendtoaddress small amount
@@ -116,11 +114,20 @@ DEV_JUICYCHAIN_API_CERTIFICATE_PATH=certificate/
 DEV_JUICYCHAIN_API_LOCATION_PATH=location/
 DEV_JUICYCHAIN_API_COUNTRY_PATH=country/
 DEV_JUICYCHAIN_API_BLOCKCHAIN_ADDRESS_PATH=blockchain-address/
+BLOCKNOTIFY_DIR=$(env  | grep BLOCKNOTIFY_DIR | cut -d '=' -f2-)
+BLOCKNOTIFY_CHAINSYNC_LIMIT=$(env  | grep BLOCKNOTIFY_CHAINSYNC_LIMIT | cut -d '=' -f2-)
+THIS_NODE_WALLET=$(env  | grep THIS_NODE_WALLET | cut -d '=' -f2-)
+echo "Using node wallet ${THIS_NODE_WALLET}"
 
-# dev v1
-DEV_IMPORT_API_BASE_URL=http://172.29.0.3:8777/
-DEV_IMPORT_API_INTEGRITY_PATH=integrity/
-DEV_IMPORT_API_BATCH_PATH=batch/
+# dev v1 import-api
+DEV_IMPORT_API_IP=$(env  | grep IMPORT_API_IP | cut -d '=' -f2-)
+DEV_IMPORT_API_PORT=$(env  | grep IMPORT_API_PORT | cut -d '=' -f2-)
+DEV_IMPORT_API_BASE_URL=http://${DEV_IMPORT_API_IP}:${DEV_IMPORT_API_PORT}/
+DEV_IMPORT_API_INTEGRITY_PATH=$(env  | grep DEV_IMPORT_API_INTEGRITY_PATH | cut -d '=' -f2-)
+DEV_IMPORT_API_BATCH_PATH=$(env  | grep DEV_IMPORT_API_IP_BATCH_PATH | cut -d '=' -f2-)
+DEV_IMPORT_API_BATCH_REQUIRE_INTEGRITY_PATH=$(env  | grep DEV_IMPORT_API_BATCH_REQUIRE_INTEGRITY | cut -d '=' -f2-)
+################################
+# dev v1 juicychain-api
 DEV_JUICYCHAIN_API_BASE_URL=http://localhost:8888/
 DEV_JUICYCHAIN_API_BATCH_PATH=batch/
 DEV_JUICYCHAIN_API_CERTIFICATE_PATH=certificate/
