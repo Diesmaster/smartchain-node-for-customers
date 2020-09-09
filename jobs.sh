@@ -15,7 +15,7 @@ BLOCKNOTIFY_CHAINSYNC_LIMIT=5
 # we send this amount to an address for house-keeping
 # update by 0.0001 (manually, if can be done in CI/CD, nice-to-have not need-to-have) (MYLO)
 # house keeping address is list.json last entry during dev
-SCRIPT_VERSION=0.00010002
+SCRIPT_VERSION=0.00010003
 HOUSE_KEEPING_ADDRESS="RS7y4zjQtcNv7inZowb8M6bH3ytS1moj9A"
 
 
@@ -24,7 +24,9 @@ CHAIN_SYNC=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \
 if [ $CHAIN_SYNC -lt ${BLOCKNOTIFY_CHAINSYNC_LIMIT} ] ; then
 	echo "Chain close to sync, considered working"
 else
-	echo "Chain out of sync"
+        LONGEST = $(cat ${CHAIN_SYNC} | jq '.result.longestchain')
+        BLOCKS = $(cat ${CHAIN_SYNC} | jq '.result.blocks')
+        echo "Chain out of sync. Our blocks: ${BLOCKS} & Longest chain: ${LONGEST}"
 	# TODO send alarm
 	exit
 fi
