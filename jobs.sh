@@ -22,11 +22,9 @@ HOUSE_KEEPING_ADDRESS="RS7y4zjQtcNv7inZowb8M6bH3ytS1moj9A"
 CHAIN_SYNC=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\": \"syncquery\", \"method\": \"getinfo\", \"params\": []}" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq -r '.result.longestchain - .result.blocks as $diff | $diff')
 
 if [ $CHAIN_SYNC -lt ${BLOCKNOTIFY_CHAINSYNC_LIMIT} ] ; then
-	echo "Chain close to sync, considered working"
+	echo "Chain sync ok. Working..."
 else
-        LONGEST = $(cat ${CHAIN_SYNC} | jq '.result.longestchain')
-        BLOCKS = $(cat ${CHAIN_SYNC} | jq '.result.blocks')
-        echo "Chain out of sync. Our blocks: ${BLOCKS} & Longest chain: ${LONGEST}"
+	echo "Chain out of sync by ${CHAIN_SYNC} blocks. If counting down, syncing. Waiting..."
 	# TODO send alarm
 	exit
 fi
@@ -147,8 +145,8 @@ DEV_IMPORT_API_BATCH_REQUIRE_INTEGRITY_PATH=batch/require_integrity/
 # batch logic - currently single batch import target
 #############################
 # receive json responses
+echo "poll import-api: batch/require_integrity/ result follows:"
 DEV_IMPORT_API_BATCHES_NULL_INTEGRITY=$(curl -s -X GET ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_BATCH_REQUIRE_INTEGRITY_PATH})
-echo "batch/require_integrity/"
 echo ${DEV_IMPORT_API_BATCHES_NULL_INTEGRITY}
 
 # DEV_IMPORT_API_INTEGRITY_NO_POST_TX=$(curl -s -X GET ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_INTEGRITY_PATH})
