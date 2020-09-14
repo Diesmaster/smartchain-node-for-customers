@@ -275,8 +275,9 @@ for row in $(echo "${RES_DEV_IMPORT_API_RAW_REFRESCO_NULL_INTEGRITY}" | jq -r '.
      echo ${row} | base64 --decode | jq -r ${1}
     }
 
-# TODO match jcf batch
-   RAW_JSON=$(_jq '.raw_json')
+# TODO NOTE: if the RAW_JSON is the same as another import, during the pre-process, the address generation will be same as existing
+# so it will not create a new batch tx, and always be in the list of new unprocessed imports
+   RAW_JSON=$row
    # echo $RAW_JSON | base64 --decode
    BATCH_DB_ID=$(_jq '.id')
    import-raw-refresco-batch-integrity-pre-process ${THIS_NODE_WALLET} ${RAW_JSON} ${BATCH_DB_ID}
