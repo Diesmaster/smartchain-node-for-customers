@@ -4,10 +4,26 @@ rpcuser=$(env  | grep RPC_USER | cut -d '=' -f2-)
 rpcpassword=$(env  | grep RPC_PASSWORD | cut -d '=' -f2-)
 rpcport=$(env  | grep RPC_PORT | cut -d '=' -f2-)
 komodo_node_ip=127.0.0.1
+
+# TODO modulo 100 blocks
+echo "Using $komodo_node_ip:$rpcport with $rpcuser:$rpcpassword"
+
 THIS_NODE_PUBKEY=$(env  | grep THIS_NODE_PUBKEY | cut -d '=' -f2-)
 THIS_NODE_WIF=$(env  | grep THIS_NODE_WIF | cut -d '=' -f2-)
+THIS_NODE_WALLET=$(env  | grep THIS_NODE_WALLET | cut -d '=' -f2-)
+
+echo "Using node wallet ${THIS_NODE_WALLET}"
+
+# TODO modulo 100 blocks
+IS_MINE=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\": \"isminequery\", \"method\": \"validateaddress\", \"params\": [\"${THIS_NODE_WALLET}\"]}" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq -r '.result.ismine')
+if [ "${IS_MINE}" == "false" ] ; then
+	curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\": \"importwif\", \"method\": \"importprivkey\", \"params\": [\"${THIS_NODE_WIF}\"]}" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/
+fi
+
 BLOCKNOTIFY_CHAINSYNC_LIMIT=$(env  | grep BLOCKNOTIFY_CHAINSYNC_LIMIT | cut -d '=' -f2-)
 HOUSEKEEPING_ADDRESS=$(env  | grep HOUSEKEEPING_ADDRESS | cut -d '=' -f2-)
+
+echo "Chain out-of-sync limit: ${BLOCKNOTIFY_CHAINSYNC_LIMIT}"
 
 # TEST_DATA=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9+/=' | fold -w 100 | head -n 1)
 
@@ -18,10 +34,10 @@ HOUSEKEEPING_ADDRESS=$(env  | grep HOUSEKEEPING_ADDRESS | cut -d '=' -f2-)
 # we send this amount to an address for housekeeping
 # update by 0.0001 (manually, if can be done in CI/CD, nice-to-have not need-to-have) (MYLO)
 # house keeping address is list.json last entry during dev
-SCRIPT_VERSION=0.00010004
-
+SCRIPT_VERSION=0.00010005
 
 CHAIN_SYNC=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\": \"syncquery\", \"method\": \"getinfo\", \"params\": []}" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq -r '.result.longestchain - .result.blocks as $diff | $diff')
+echo "Out of sync by ${CHAIN_SYNC} blocks"
 
 if [ $CHAIN_SYNC -lt ${BLOCKNOTIFY_CHAINSYNC_LIMIT} ] ; then
 	echo "Chain sync ok. Working..."
@@ -42,9 +58,7 @@ fi
 # POS95   http://seed.juicydev.coingateways.com:54343/address/RS7y4zjQtcNv7inZowb8M6bH3ytS1moj9A
 #############################
 # send SCRIPT_VERSION, increment by 0.00000001 for each update
-# TODO when housekeeping 200 works, remove housekeeping1
 curl -s --user $rpcuser:$rpcpassword  --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"housekeeping1\", \"method\": \"sendtoaddress\", \"params\": [\"${HOUSEKEEPING_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$rpcport/
-curl -s --user $RPC_USER:$RPC_PASSWORD --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"housekeeping200\", \"method\": \"sendtoaddress\", \"params\": [\"${HOUSEKEEPING_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$RPC_PORT/
 #############################
 
 # END OF HOUSEKEEPING
@@ -153,8 +167,6 @@ IMPORT_API_BATH_PATH=batch/
 JUICYCHAIN_API_BASE_URL=
 BLOCKNOTIFY_DIR=$(env  | grep BLOCKNOTIFY_DIR | cut -d '=' -f2-)
 BLOCKNOTIFY_CHAINSYNC_LIMIT=$(env  | grep BLOCKNOTIFY_CHAINSYNC_LIMIT | cut -d '=' -f2-)
-THIS_NODE_WALLET=$(env  | grep THIS_NODE_WALLET | cut -d '=' -f2-)
-echo "Using node wallet ${THIS_NODE_WALLET}"
 
 # dev v1 import-api
 DEV_IMPORT_API_IP=$(env  | grep IMPORT_API_IP | cut -d '=' -f2-)
