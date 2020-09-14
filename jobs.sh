@@ -1,8 +1,8 @@
 #!/bin/bash
 
-RPC_USER=$(env  | grep RPC_USER | cut -d '=' -f2-)
-RPC_PASSWORD=$(env  | grep RPC_PASSWORD | cut -d '=' -f2-)
-RPC_PORT=$(env  | grep RPC_PORT | cut -d '=' -f2-)
+rpcuser=$(env  | grep RPC_USER | cut -d '=' -f2-)
+rpcpassword=$(env  | grep RPC_PASSWORD | cut -d '=' -f2-)
+rpcport=$(env  | grep RPC_PORT | cut -d '=' -f2-)
 komodo_node_ip=127.0.0.1
 THIS_NODE_PUBKEY=$(env  | grep THIS_NODE_PUBKEY | cut -d '=' -f2-)
 THIS_NODE_WIF=$(env  | grep THIS_NODE_WIF | cut -d '=' -f2-)
