@@ -161,7 +161,7 @@ DEV_IMPORT_API_PORT=$(env  | grep IMPORT_API_PORT | cut -d '=' -f2-)
 DEV_IMPORT_API_BASE_URL=http://${DEV_IMPORT_API_IP}:${DEV_IMPORT_API_PORT}/
 DEV_IMPORT_API_JCF_BATCH_INTEGRITY_PATH=$(env  | grep DEV_IMPORT_API_JCF_BATCH_INTEGRITY_PATH | cut -d '=' -f2-)
 DEV_IMPORT_API_JCF_BATCH_PATH=$(env  | grep DEV_IMPORT_API_JCF_BATCH_PATH | cut -d '=' -f2-)
-DEV_IMPORT_API_JCF_BATCH_REQUIRE_INTEGRITY_PATH=$(env  | grep DEV_IMPORT_API_BATCH_REQUIRE_INTEGRITY_PATH | cut -d '=' -f2-)
+DEV_IMPORT_API_JCF_BATCH_REQUIRE_INTEGRITY_PATH=$(env  | grep DEV_IMPORT_API_JCF_BATCH_REQUIRE_INTEGRITY_PATH | cut -d '=' -f2-)
 DEV_IMPORT_API_JCF_BATCH_NEW_PATH=$(env  | grep DEV_IMPORT_API_BATCH_NEW_PATH | cut -d '=' -f2-)
 DEV_IMPORT_API_RAW_REFRESCO_PATH=$(env  | grep DEV_IMPORT_API_RAW_REFRESCO_PATH | cut -d '=' -f2-)
 DEV_IMPORT_API_RAW_REFRESCO_REQUIRE_INTEGRITY_PATH=$(env  | grep DEV_IMPORT_API_RAW_REFRESCO_REQUIRE_INTEGRITY_PATH | cut -d '=' -f2-)
@@ -198,12 +198,13 @@ DEV_JUICYCHAIN_API_BLOCKCHAIN_ADDRESS_PATH=blockchain-address/
 #############################
 # receive json responses
 echo "poll import-api: batch/require_integrity/ result follows:"
-DEV_IMPORT_API_JCF_BATCHES_NULL_INTEGRITY=$(curl -s -X GET ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_JCF_BATCH_REQUIRE_INTEGRITY_PATH})
+echo curl -s -X GET ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_JCF_BATCH_REQUIRE_INTEGRITY_PATH}
+RES_DEV_IMPORT_API_JCF_BATCHES_NULL_INTEGRITY=$(curl -s -X GET ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_JCF_BATCH_REQUIRE_INTEGRITY_PATH})
 # from https://stackoverflow.com/a/46955018
-if jq -e . >/dev/null 2>&1 <<<"${DEV_IMPORT_API_JCF_BATCHES_NULL_INTEGRITY}"; then
+if jq -e . >/dev/null 2>&1 <<<"${RES_DEV_IMPORT_API_JCF_BATCHES_NULL_INTEGRITY}"; then
     echo "Parsed JSON successfully and got something other than false/null"
     echo "Start JSON response"
-    echo ${DEV_IMPORT_API_JCF_BATCHES_NULL_INTEGRITY}
+    echo ${RES_DEV_IMPORT_API_JCF_BATCHES_NULL_INTEGRITY}
     echo "End JSON response"
 else
     echo "Failed to parse JSON, or got false/null"
@@ -218,7 +219,7 @@ fi
 # update batches-api with "import-address"
 # send "pre-process" tx to "import-address"
 
-for row in $(echo "${DEV_IMPORT_API_JCF_BATCHES_NULL_INTEGRITY}" | jq -r '.[] | @base64'); do
+for row in $(echo "${RES_DEV_IMPORT_API_JCF_BATCHES_NULL_INTEGRITY}" | jq -r '.[] | @base64'); do
     _jq() {
      echo ${row} | base64 --decode | jq -r ${1}
     }
@@ -243,8 +244,8 @@ done
 #############################
 # receive json responses
 echo "poll import-api: ${DEV_IMPORT_API_RAW_REFRESCO_REQUIRE_INTEGRITY_PATH} result follows:"
-DEV_IMPORT_API_RAW_REFRESCO_NULL_INTEGRITY=$(curl -s -X GET ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_RAW_REFRESCO_REQUIRE_INTEGRITY_PATH})
-echo ${DEV_IMPORT_API_RAW_REFRESCO_NULL_INTEGRITY}
+RES_DEV_IMPORT_API_RAW_REFRESCO_NULL_INTEGRITY=$(curl -s -X GET ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_RAW_REFRESCO_REQUIRE_INTEGRITY_PATH})
+echo ${RES_DEV_IMPORT_API_RAW_REFRESCO_NULL_INTEGRITY}
 
 # DEV_IMPORT_API_RAW_REFRESCO_INTEGRITY_NO_POST_TX=$(curl -s -X GET ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_RAW_REFRESCO_INTEGRITY_PATH})
 echo "TODO raw-refresco/integrity/missing_post_tx/"
@@ -255,11 +256,12 @@ echo "TODO raw-refresco/integrity/missing_post_tx/"
 # update batches-api with "import-address"
 # send "pre-process" tx to "import-address"
 
-for row in $(echo "${DEV_IMPORT_API_RAW_REFRESCO_NULL_INTEGRITY}" | jq -r '.[] | @base64'); do
+for row in $(echo "${RES_DEV_IMPORT_API_RAW_REFRESCO_NULL_INTEGRITY}" | jq -r '.[] | @base64'); do
     _jq() {
      echo ${row} | base64 --decode | jq -r ${1}
     }
 
+# TODO match jcf batch
    RAW_JSON=$(_jq '.raw_json')
    # echo $RAW_JSON | base64 --decode
    BATCH_DB_ID=$(_jq '.id')
