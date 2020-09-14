@@ -130,10 +130,15 @@ function import-raw-refresco-batch-integrity-pre-process {
     echo curl -s -X POST -H \"Content-Type: application/json\" ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_RAW_REFRESCO_INTEGRITY_PATH} --data "{\"integrity_address\": \"${INTEGRITY_ADDRESS}\", \"batch\": \"${IMPORT_ID}\"}"
     local INTEGRITY_ID=$(curl -s -X POST -H "Content-Type: application/json" ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_RAW_REFRESCO_INTEGRITY_PATH} --data "{\"integrity_address\": \"${INTEGRITY_ADDRESS}\", \"batch\": \"${IMPORT_ID}\"}" | jq -r '.id')
     echo "integrity db id: ${INTEGRITY_ID}"
+    if [ "${INTEGRITY_ID}" != "null" ] ; then
     # curl sendtoaddress small amount
-    local INTEGRITY_PRE_TX=$(curl -s --user $rpcuser:$rpcpassword  --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"sendpretx\", \"method\": \"sendtoaddress\", \"params\": [\"${INTEGRITY_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$rpcport/ | jq -r '.result')
-    echo "integrity pre tx: ${INTEGRITY_PRE_TX}"
-    curl -s -X PUT -H 'Content-Type: application/json' ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_RAW_REFRESCO_INTEGRITY_PATH}${INTEGRITY_ID}/ --data "{\"integrity_address\": \"${INTEGRITY_ADDRESS}\", \"integrity_pre_tx\": \"${INTEGRITY_PRE_TX}\" }"
+    	local INTEGRITY_PRE_TX=$(curl -s --user $rpcuser:$rpcpassword  --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"sendpretx\", \"method\": \"sendtoaddress\", \"params\": [\"${INTEGRITY_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$rpcport/ | jq -r '.result')
+    	echo "integrity pre tx: ${INTEGRITY_PRE_TX}"
+    	curl -s -X PUT -H 'Content-Type: application/json' ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_RAW_REFRESCO_INTEGRITY_PATH}${INTEGRITY_ID}/ --data "{\"integrity_address\": \"${INTEGRITY_ADDRESS}\", \"integrity_pre_tx\": \"${INTEGRITY_PRE_TX}\" }"
+    else
+	echo "Cannot complete integrity tx, likely cause is RAW_JSON is empty and/or already exists which creates duplicate integrity address, not allowed by db uniqueness constraint"
+	# TODO add duplicate flag to batch import, so it does not try again
+    fi
 }
 
 # general flow (high level)
@@ -277,7 +282,10 @@ for row in $(echo "${RES_DEV_IMPORT_API_RAW_REFRESCO_NULL_INTEGRITY}" | jq -r '.
 
 # TODO NOTE: if the RAW_JSON is the same as another import, during the pre-process, the address generation will be same as existing
 # so it will not create a new batch tx, and always be in the list of new unprocessed imports
+   # CORRECT
    RAW_JSON=$row
+   # TO FORCE {} FOR TESTING
+   # RAW_JSON=$(_jq '.raw_json')
    # echo $RAW_JSON | base64 --decode
    BATCH_DB_ID=$(_jq '.id')
    import-raw-refresco-batch-integrity-pre-process ${THIS_NODE_WALLET} ${RAW_JSON} ${BATCH_DB_ID}
