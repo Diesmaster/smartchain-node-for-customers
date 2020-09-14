@@ -109,18 +109,20 @@ function import-jcf-batch-integrity-pre-process {
 # batch database id = $3
 ###########################
 function import-raw-refresco-batch-integrity-pre-process {
+    echo "#### RAW REFRESCO ####"
+    local WALLET=$1 
+    local DATA=$2 # this is raw_json TODO needs to save in db
+    local IMPORT_ID=$3
+    echo "Checking import id: ${IMPORT_ID}"
+    _jq() {
+     echo ${DATA} | base64 --decode | jq -r ${1}
+    }
     # integrity-before-processing , create blockchain-address for the import data from integration pipeline
     # blockchain-address has a database constraint for uniqueness.  will fail if exists
     # signmessage, genkomodo.php
     # update batches-api with "import-address"
     # send "pre-process" tx to "import-address"
-    echo "#### RAW REFRESCO ####"
-    local WALLET=$1 
-    local DATA=$2
-    # TODO DATA SOMETIMES {} from parsing no key existing in jq before this function call
-    echo $DATA
-    local IMPORT_ID=$3
-    echo "Checking import id: ${IMPORT_ID}"
+
     # no wrap base64 from https://superuser.com/a/1225139
     local SIGNED_DATA=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"signrawjson\", \"method\": \"signmessage\", \"params\": [\"${WALLET}\", \"${DATA}\"] }" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq -r '.result' | base64 -w 0) # | sed 's/\=//')
     echo "signed data: ${SIGNED_DATA}"
@@ -135,6 +137,14 @@ function import-raw-refresco-batch-integrity-pre-process {
     	local INTEGRITY_PRE_TX=$(curl -s --user $rpcuser:$rpcpassword  --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"sendpretx\", \"method\": \"sendtoaddress\", \"params\": [\"${INTEGRITY_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$rpcport/ | jq -r '.result')
     	echo "integrity pre tx: ${INTEGRITY_PRE_TX}"
     	curl -s -X PUT -H 'Content-Type: application/json' ${DEV_IMPORT_API_BASE_URL}${DEV_IMPORT_API_RAW_REFRESCO_INTEGRITY_PATH}${INTEGRITY_ID}/ --data "{\"integrity_address\": \"${INTEGRITY_ADDRESS}\", \"integrity_pre_tx\": \"${INTEGRITY_PRE_TX}\" }"
+
+	# TODO JCF data model will use this mechanism
+	# GET THE PARTS OF IMPORT DATA THAT NEED A TX SENT
+	local ANFP=$(_jq '.anfp')
+	local PON=$(_jq '.pon')
+	local BNFP=$(_jq '.bnfp')
+	echo "IMPORT DATA TO SEND TO: ${ANFP} & ${PON} & ${BNFP}"
+
     else
 	echo "Cannot complete integrity tx, likely cause is RAW_JSON is empty and/or already exists which creates duplicate integrity address, not allowed by db uniqueness constraint"
 	# TODO add duplicate flag to batch import, so it does not try again
