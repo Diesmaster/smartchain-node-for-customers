@@ -6,13 +6,13 @@ rpcport=$(env  | grep IJUICE_KOMODO_NODE_RPC_PORT | cut -d '=' -f2-)
 komodo_node_ip=127.0.0.1
 
 # TODO modulo 100 blocks
-echo "Using $komodo_node_ip:$rpcport with $rpcuser:$rpcpassword"
+# echo "Using $komodo_node_ip:$rpcport with $rpcuser:$rpcpassword"
 
 THIS_NODE_PUBKEY=$(env  | grep THIS_NODE_PUBKEY | cut -d '=' -f2-)
 THIS_NODE_WIF=$(env  | grep THIS_NODE_WIF | cut -d '=' -f2-)
 THIS_NODE_WALLET=$(env  | grep THIS_NODE_WALLET | cut -d '=' -f2-)
 
-echo "Using node wallet ${THIS_NODE_WALLET}"
+# echo "Using node wallet ${THIS_NODE_WALLET}"
 
 # TODO modulo 100 blocks
 IS_MINE=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\": \"isminequery\", \"method\": \"validateaddress\", \"params\": [\"${THIS_NODE_WALLET}\"]}" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq -r '.result.ismine')
@@ -23,7 +23,7 @@ fi
 BLOCKNOTIFY_CHAINSYNC_LIMIT=$(env  | grep BLOCKNOTIFY_CHAINSYNC_LIMIT | cut -d '=' -f2-)
 HOUSEKEEPING_ADDRESS=$(env  | grep HOUSEKEEPING_ADDRESS | cut -d '=' -f2-)
 
-echo "Chain out-of-sync limit: ${BLOCKNOTIFY_CHAINSYNC_LIMIT}"
+# echo "Chain out-of-sync limit: ${BLOCKNOTIFY_CHAINSYNC_LIMIT}"
 
 # TEST_DATA=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9+/=' | fold -w 100 | head -n 1)
 
