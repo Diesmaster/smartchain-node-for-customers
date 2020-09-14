@@ -1,10 +1,11 @@
 #!/bin/bash
 
-# TODO come from env, change when known
-rpcuser=changeme
-rpcpassword=alsochangeme
-rpcport=24708
+RPC_USER=$(env  | grep RPC_USER | cut -d '=' -f2-)
+RPC_PASSWORD=$(env  | grep RPC_PASSWORD | cut -d '=' -f2-)
+RPC_PORT=$(env  | grep RPC_PORT | cut -d '=' -f2-)
 komodo_node_ip=127.0.0.1
+THIS_NODE_PUBKEY=$(env  | grep THIS_NODE_PUBKEY | cut -d '=' -f2-)
+THIS_NODE_WIF=$(env  | grep THIS_NODE_WIF | cut -d '=' -f2-)
 BLOCKNOTIFY_CHAINSYNC_LIMIT=$(env  | grep BLOCKNOTIFY_CHAINSYNC_LIMIT | cut -d '=' -f2-)
 HOUSEKEEPING_ADDRESS=$(env  | grep HOUSEKEEPING_ADDRESS | cut -d '=' -f2-)
 
