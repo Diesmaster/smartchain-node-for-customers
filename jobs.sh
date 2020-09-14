@@ -144,6 +144,8 @@ function import-raw-refresco-batch-integrity-pre-process {
 	local PON=$(_jq '.pon')
 	local BNFP=$(_jq '.bnfp')
 	echo "IMPORT DATA TO SEND TO: ${ANFP} & ${PON} & ${BNFP}"
+	local SMTXID=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"smbatchinputs\", \"method\": \"sendmany\", \"params\": [\"\", {\"RBtNBJjWKVKPFG4To5Yce9TWWmc2AenzfZ\":0.001,\"RPS3xTZCzr6aQfoMw5Bu1rpQBF6iVCWsyu\":0.002, \"RPKvuLYyyDB3tT6xDoMaEWBE3Ww3A27yom\": 0.003} ]} " -H 'content-type: text/plain;' http://$komodo_node_ip:$rpcport/ | jq -r '.result')
+	echo "${SMTXID} is the sendmany"
 
     else
 	echo "Cannot complete integrity tx, likely cause is RAW_JSON is empty and/or already exists which creates duplicate integrity address, not allowed by db uniqueness constraint"
