@@ -1,8 +1,8 @@
 #!/bin/bash
 
-rpcuser=$(env  | grep RPC_USER | cut -d '=' -f2-)
-rpcpassword=$(env  | grep RPC_PASSWORD | cut -d '=' -f2-)
-rpcport=$(env  | grep RPC_PORT | cut -d '=' -f2-)
+rpcuser=$(env  | grep IJUICE_KOMODO_NODE_USERNAME | cut -d '=' -f2-)
+rpcpassword=$(env  | grep IJUICE_KOMODO_NODE_PASSWORD | cut -d '=' -f2-)
+rpcport=$(env  | grep IJUICE_KOMODO_NODE_RPC_PORT | cut -d '=' -f2-)
 komodo_node_ip=127.0.0.1
 
 # TODO modulo 100 blocks
@@ -181,6 +181,7 @@ DEV_IMPORT_API_RAW_REFRESCO_REQUIRE_INTEGRITY_PATH=$(env  | grep DEV_IMPORT_API_
 DEV_IMPORT_API_RAW_REFRESCO_NEW_PATH=$(env  | grep DEV_IMPORT_API_RAW_REFRESCO_NEW_PATH | cut -d '=' -f2-)
 DEV_IMPORT_API_RAW_REFRESCO_INTEGRITY_PATH=$(env  | grep DEV_IMPORT_API_RAW_REFRESCO_INTEGRITY_PATH | cut -d '=' -f2-)
 
+# TODO after 15 Sept
 ################################
 # dev v1 juicychain-api
 DEV_JUICYCHAIN_API_BASE_URL=http://localhost:8888/
