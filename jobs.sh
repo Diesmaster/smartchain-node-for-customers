@@ -117,6 +117,12 @@ function import-raw-refresco-batch-integrity-pre-process {
     _jq() {
      echo ${DATA} | base64 --decode | jq -r ${1}
     }
+
+    _getaddress() {
+      SIGNED_ITEM=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"signrawjson\", \"method\": \"signmessage\", \"params\": [\"${WALLET}\", \"${1}\"] }" -H 'content-type: text/plain;' http://127.0.0.1:$rpcport/ | jq -r '.result' | base64 -w 0) # | sed 's/\=//')
+      ITEM_ADDRESS=$(php ${BLOCKNOTIFY_DIR}genaddressonly.php $SIGNED_ITEM | jq -r '.address')
+      echo ${ITEM_ADDRESS}
+    }
     # integrity-before-processing , create blockchain-address for the import data from integration pipeline
     # blockchain-address has a database constraint for uniqueness.  will fail if exists
     # signmessage, genkomodo.php
@@ -143,8 +149,11 @@ function import-raw-refresco-batch-integrity-pre-process {
 	local ANFP=$(_jq '.anfp')
 	local PON=$(_jq '.pon')
 	local BNFP=$(_jq '.bnfp')
-	echo "IMPORT DATA TO SEND TO: ${ANFP} & ${PON} & ${BNFP}"
-	local SMTXID=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"smbatchinputs\", \"method\": \"sendmany\", \"params\": [\"\", {\"RBtNBJjWKVKPFG4To5Yce9TWWmc2AenzfZ\":0.001,\"RPS3xTZCzr6aQfoMw5Bu1rpQBF6iVCWsyu\":0.002, \"RPKvuLYyyDB3tT6xDoMaEWBE3Ww3A27yom\": 0.003} ]} " -H 'content-type: text/plain;' http://$komodo_node_ip:$rpcport/ | jq -r '.result')
+	local ANFP_ADDRESS=$(_getaddress ${ANFP})
+	local PON_ADDRESS=$(_getaddress ${PON})
+	local BNFP_ADDRESS=$(_getaddress ${BNFP})
+	echo "IMPORT DATA TO SEND TO: ${ANFP} has ${ANFP_ADDRESS}  & ${PON} has ${PON_ADDRESS} & ${BNFP} has ${BNFP_ADDRESS}"
+	local SMTXID=$(curl -s --user $rpcuser:$rpcpassword --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"smbatchinputs\", \"method\": \"sendmany\", \"params\": [\"\", {\"${ANFP_ADDRESS}\":0.001,\"${PON_ADDRESS}\":0.002, \"${BNFP_ADDRESS}\": 0.003} ]} " -H 'content-type: text/plain;' http://$komodo_node_ip:$rpcport/ | jq -r '.result')
 	echo "${SMTXID} is the sendmany"
 
     else
