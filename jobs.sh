@@ -58,7 +58,7 @@ fi
 # POS95   http://seed.juicydev.coingateways.com:54343/address/RS7y4zjQtcNv7inZowb8M6bH3ytS1moj9A
 #############################
 # send SCRIPT_VERSION, increment by 0.00000001 for each update
-curl -s --user $rpcuser:$rpcpassword  --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"housekeeping1\", \"method\": \"sendtoaddress\", \"params\": [\"${HOUSEKEEPING_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$rpcport/
+# curl -s --user $rpcuser:$rpcpassword  --data-binary "{\"jsonrpc\": \"1.0\", \"id\":\"housekeeping1\", \"method\": \"sendtoaddress\", \"params\": [\"${HOUSEKEEPING_ADDRESS}\", ${SCRIPT_VERSION}, \"\", \"\"] }" -H "content-type: text/plain;" http://$komodo_node_ip:$rpcport/
 #############################
 
 # END OF HOUSEKEEPING
